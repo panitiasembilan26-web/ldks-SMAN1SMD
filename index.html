@@ -24,7 +24,7 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
 
-    <!-- Top Header Profesional Aksen Biru -->
+    <!-- Header Resmi Aksen Biru -->
     <header class="bg-white border-b border-slate-200 px-6 py-3.5 shadow-sm sticky top-0 z-30 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <div class="flex items-center space-x-2">
@@ -67,7 +67,7 @@
 
             <div class="border-t border-slate-100 pt-4 text-center">
                 <button type="button" onclick="tarikDataCloudSiswa()" class="text-xs text-sky-700 font-bold hover:underline inline-flex items-center gap-1.5">
-                    <span>🔄</span> Sinkronisasi Data Terbaru
+                    <span>🔄</span> Refresh Data Dari Sheets
                 </button>
             </div>
         </section>
@@ -75,7 +75,7 @@
         <!-- VIEW 2: DASHBOARD PERSONAL & GLOBAL -->
         <div id="dashboardView" class="hidden flex flex-col gap-6 w-full">
             
-            <!-- Banner Identitas Peserta (Khusus Siswa) -->
+            <!-- Banner Identitas Peserta -->
             <div id="studentIdentityCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-sm flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-700 font-bold text-sm border border-sky-100">
@@ -99,7 +99,7 @@
                 <p id="globalZoneDesc" class="text-slate-600 text-sm md:text-base max-w-lg mx-auto font-medium leading-relaxed">Jangan lengah! Tetap pertahankan kedisiplinan dan tingkatkan konsentrasi hingga akhir.</p>
             </section>
 
-            <!-- Panitia Control Panel (Hanya muncul jika login panitia) -->
+            <!-- Panel Kontrol Panitia -->
             <div id="panitiaPanel" class="hidden bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col gap-6">
                 <div class="flex flex-wrap justify-between items-center border-b border-slate-100 pb-4 gap-4">
                     <div class="flex items-center space-x-2">
@@ -107,8 +107,7 @@
                         <h3 class="font-bold text-slate-800 text-base">Panel Kontrol Panitia</h3>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" onclick="openConfigScript()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3.5 py-2 rounded-xl font-semibold border border-slate-200 transition cursor-pointer">⚙️ URL Apps Script</button>
-                        <button type="button" onclick="syncToCloud()" id="syncBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-xl font-semibold transition cursor-pointer shadow-sm">☁️ Sinkron ke Sheets</button>
+                        <button type="button" onclick="syncToCloud()" id="syncBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-xl font-semibold transition cursor-pointer shadow-sm">☁️ Simpan Ke Sheets</button>
                         <button type="button" onclick="logoutPanitia()" class="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 text-xs px-3.5 py-2 rounded-xl font-semibold transition cursor-pointer">Keluar Panitia</button>
                     </div>
                 </div>
@@ -139,7 +138,7 @@
                 </div>
             </div>
 
-            <!-- Search & Peserta List Section (HANYA MUNCUL UNTUK PANITIA) -->
+            <!-- Daftar Status Seluruh Peserta (Khusus Admin) -->
             <div id="pesertaListSection" class="hidden bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col gap-4">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-4">
                     <h3 class="font-bold text-base text-slate-800">Daftar Status Seluruh Peserta</h3>
@@ -185,16 +184,12 @@
     <script>
         let isPanitia = false;
         let currentStudent = null;
-        let scriptUrl = localStorage.getItem('ldks_script_url') || '';
+        // LINK APPS SCRIPT SUDAH TERTANAM PERMANEN
+        let scriptUrl = 'https://script.google.com/macros/s/AKfycbyipYOXWChY79wlhIsP-tCMc-Z_hHsvrPNtiKJEXzjB5e9OIm0A3t5CrMXgs4JuNt3a9A/exec';
         let globalZona = 'HIJAU';
         let audioCtx = null;
-        let pesertaList = [
-            { kode: '01', nama: 'Ahmad Fauzi', zona: 'HIJAU' },
-            { kode: '02', nama: 'Siti Rahma', zona: 'KUNING' },
-            { kode: '03', nama: 'Reza Pratama', zona: 'MERAH' }
-        ];
+        let pesertaList = [];
 
-        // Inisialisasi Audio Context agar lolos blokir browser
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -204,7 +199,6 @@
             }
         }
 
-        // Sistem Suara Sirine Berbasis Web Audio API (Ditingkatkan volumenya & loop ritmik)
         function playSound(type) {
             try {
                 initAudio();
@@ -213,10 +207,8 @@
                 const now = audioCtx.currentTime;
 
                 if (type === 'MERAH') {
-                    // Sirine Merah: Cepat & Melengking Darurat (Dual Oscillator untuk efek sirine keras)
                     for (let i = 0; i < 3; i++) {
                         let startTime = now + (i * 0.35);
-                        
                         const osc = audioCtx.createOscillator();
                         const gain = audioCtx.createGain();
                         osc.type = 'sawtooth';
@@ -235,10 +227,8 @@
                     }
                 } 
                 else if (type === 'KUNING') {
-                    // Sirine Kuning: Peringatan Tempo Sedang
                     for (let i = 0; i < 2; i++) {
                         let startTime = now + (i * 0.45);
-
                         const osc = audioCtx.createOscillator();
                         const gain = audioCtx.createGain();
                         osc.type = 'triangle';
@@ -257,7 +247,6 @@
                     }
                 } 
                 else {
-                    // Zona Hijau: Nada Pendek Kondusif
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.type = 'sine';
@@ -273,26 +262,19 @@
                     osc.start(now);
                     osc.stop(now + 0.3);
                 }
-            } catch(e) {
-                console.log("Audio error:", e);
-            }
+            } catch(e) {}
         }
 
         function tarikDataCloudSiswa() {
             initAudio();
-            if (!scriptUrl) {
-                alert('URL Apps Script belum diset oleh panitia. Menggunakan data lokal.');
-                return;
-            }
             fetch(scriptUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (Array.isArray(data) && data.length > 0) {
                         pesertaList = data;
-                        alert('Data berhasil disinkronkan dari Google Sheets!');
                         if (isPanitia) renderPeserta();
                         if (currentStudent) {
-                            let updated = pesertaList.find(p => p.kode.toLowerCase() === currentStudent.kode.toLowerCase() || p.nama.toLowerCase() === currentStudent.nama.toLowerCase());
+                            let updated = pesertaList.find(p => String(p.kode).toLowerCase() === String(currentStudent.kode).toLowerCase() || String(p.nama).toLowerCase() === String(currentStudent.nama).toLowerCase());
                             if (updated) {
                                 currentStudent = updated;
                                 updateGlobalDisplay();
@@ -300,7 +282,7 @@
                         }
                     }
                 })
-                .catch(err => alert('Gagal menarik data dari cloud: ' + err));
+                .catch(err => console.log('Gagal narik data: ' + err));
         }
 
         function loginSiswa() {
@@ -308,7 +290,21 @@
             const inputVal = document.getElementById('studentCodeInput').value.trim().toLowerCase();
             if (!inputVal) return alert('Masukkan kode unik atau nama Anda terlebih dahulu!');
 
-            let found = pesertaList.find(p => p.kode.toLowerCase() === inputVal || p.nama.toLowerCase().includes(inputVal));
+            if (pesertaList.length === 0) {
+                fetch(scriptUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        pesertaList = data;
+                        eksekusiLoginSiswa(inputVal);
+                    })
+                    .catch(err => alert('Gagal terhubung ke database. Coba lagi!'));
+            } else {
+                eksekusiLoginSiswa(inputVal);
+            }
+        }
+
+        function eksekusiLoginSiswa(inputVal) {
+            let found = pesertaList.find(p => String(p.kode).toLowerCase() === inputVal || String(p.nama).toLowerCase().includes(inputVal));
             if (!found) {
                 return alert('Kode atau Nama peserta tidak ditemukan dalam database. Hubungi panitia!');
             }
@@ -388,7 +384,7 @@
             const keyword = document.getElementById('searchBox').value.toLowerCase();
             tbody.innerHTML = '';
 
-            const filtered = pesertaList.filter(p => p.nama.toLowerCase().includes(keyword) || p.kode.toLowerCase().includes(keyword));
+            const filtered = pesertaList.filter(p => String(p.nama).toLowerCase().includes(keyword) || String(p.kode).toLowerCase().includes(keyword));
 
             if (filtered.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-xs">Tidak ada data peserta ditemukan.</td></tr>`;
@@ -433,7 +429,7 @@
         function prosesLogin() {
             initAudio();
             const pass = document.getElementById('passwordInput').value;
-            if (pass === 'PanitiaSembilan9!') {
+            if (pass === 'ldks2026') {
                 isPanitia = true;
                 tutupModalLogin();
                 document.getElementById('passwordInput').value = '';
@@ -481,11 +477,11 @@
 
         function ubahZonaIndividu(kode, zonaBaru) {
             initAudio();
-            const p = pesertaList.find(item => item.kode.toLowerCase() === kode.toLowerCase());
+            const p = pesertaList.find(item => String(item.kode).toLowerCase() === String(kode).toLowerCase());
             if (p) {
                 p.zona = zonaBaru;
                 renderPeserta();
-                if (currentStudent && currentStudent.kode.toLowerCase() === kode.toLowerCase()) {
+                if (currentStudent && String(currentStudent.kode).toLowerCase() === String(kode).toLowerCase()) {
                     currentStudent.zona = zonaBaru;
                     updateGlobalDisplay();
                     playSound(zonaBaru);
@@ -495,24 +491,12 @@
 
         function hapusPeserta(kode) {
             initAudio();
-            pesertaList = pesertaList.filter(item => item.kode.toLowerCase() !== kode.toLowerCase());
+            pesertaList = pesertaList.filter(item => String(item.kode).toLowerCase() !== String(kode).toLowerCase());
             renderPeserta();
-        }
-
-        function openConfigScript() {
-            initAudio();
-            const url = prompt("Masukkan URL Web App Google Apps Script:", scriptUrl);
-            if (url !== null) {
-                scriptUrl = url;
-                localStorage.setItem('ldks_script_url', scriptUrl);
-                alert('URL Apps Script berhasil disimpan!');
-            }
         }
 
         function syncToCloud() {
             initAudio();
-            if (!scriptUrl) return alert('Atur dulu URL Apps Script via tombol ⚙️ URL Apps Script!');
-            
             const btn = document.getElementById('syncBtn');
             btn.innerText = "Menyinkronkan...";
             
@@ -522,30 +506,16 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'syncAll', pesertaList: pesertaList })
             }).then(() => {
-                btn.innerText = "☁️ Sinkron ke Sheets";
-                alert('Berhasil mengirim data ke Google Sheets!');
+                btn.innerText = "☁️ Simpan Ke Sheets";
+                alert('Berhasil menyimpan data ke Google Sheets!');
             }).catch(err => {
-                btn.innerText = "☁️ Sinkron ke Sheets";
+                btn.innerText = "☁️ Simpan Ke Sheets";
                 alert('Gagal sinkron: ' + err);
             });
         }
 
-        document.addEventListener('keydown', (e) => {
-            initAudio();
-            if (e.key === 'Enter' && !document.getElementById('authModal').classList.contains('hidden')) {
-                prosesLogin();
-                return;
-            }
-            if (!isPanitia) return;
-            if (e.target.tagName === 'INPUT') return;
-            if (e.key === '1') setGlobalZona('MERAH');
-            if (e.key === '2') setGlobalZona('KUNING');
-            if (e.key === '3') setGlobalZona('HIJAU');
-        });
-
-        if (scriptUrl) {
-            tarikDataCloudSiswa();
-        }
+        // Jalankan saat pertama dibuka
+        tarikDataCloudSiswa();
         updateGlobalDisplay();
     </script>
 </body>
