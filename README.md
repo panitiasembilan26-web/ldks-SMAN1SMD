@@ -185,7 +185,7 @@
         let isPanitia = false;
         let currentStudent = null;
         // LINK GOOGLE APPS SCRIPT BARU
-        let scriptUrl = 'https://script.google.com/macros/s/AKfycbyipYOXWChY79wlhIsP-tCMc-Z_hHsvrPNtiKJEXzjB5e9OIm0A3t5CrMXgs4JuNt3a9A/exec';
+       let scriptUrl = 'https://script.google.com/macros/s/AKfycbyipYOXWChY79wlhIsP-tCMc-Z_hHsvrPNtiKJEXzjB5e9OIm0A3t5CrMXgs4JuNt3a9A/exec';
         let globalZona = 'HIJAU';
         let audioCtx = null;
         let pesertaList = [];
